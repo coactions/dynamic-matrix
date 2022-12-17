@@ -1,0 +1,39 @@
+---
+name: Matrix
+branding:
+  color: purple
+  icon: arrow-right-circle
+description: Dynamic Job Matrix for Python
+inputs:
+  min_python:
+    description: Minimal version of python to be tested against.
+    required: false
+    default: "3.8"
+  other_names:
+    description: Newline separated list of other tox environments to include.
+    default: ""
+    required: false
+  platforms:
+    description: >
+      Comma separated list of platforms on which to test.
+      Allowed entries linux, windows, macos.
+    default: linux
+  linux:
+    description: >
+      Expansion strategy for linux, full or minmax.
+    default: full
+  windows:
+    description: >
+      Expansion strategy for windows, full or minmax.
+    default: minmax # costly/slow
+  macos:
+    description: >
+      Expansion strategy for windows, full or minmax.
+    default: minmax # costly/slow
+
+outputs:
+  matrix_include:
+    description: List of tox environments to be run
+runs:
+  using: docker
+  image: Dockerfile
