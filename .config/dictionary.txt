@@ -1,0 +1,13 @@
+Sbarnea
+Sorin
+autobuild
+autofix
+autoupdate
+codenotify
+codeql
+codespell
+dmypy
+minmax
+mkdocs
+pyenv
+ssbarnea
