@@ -22,7 +22,7 @@ def main() -> None:
         if k.startswith("INPUT_"):
             core.info(f"Env var {k}={v}")
     try:
-        other_names = core.get_input("other_names", required=False).split(",")
+        other_names = core.get_input("other_names", required=False).split("\n")
         platforms = core.get_input("platforms", required=False).split(",")
         min_python = core.get_input("min_python", required=True)
         stategies = {}
