@@ -1,5 +1,8 @@
 ---
 name: Matrix
+branding:
+  color: purple
+  icon: arrow-right-circle
 description: Dynamic Job Matrix for Python
 inputs:
     min-python:
