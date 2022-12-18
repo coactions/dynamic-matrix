@@ -22,7 +22,7 @@ def main() -> None:
         if k.startswith("INPUT_"):
             core.info(f"Env var {k}={v}")
     try:
-        other_envs = core.get_input("other_envs", required=False).split(",")
+        other_names = core.get_input("other_names", required=False).split(",")
         platforms = core.get_input("platforms", required=False).split(",")
         min_python = core.get_input("min_python", required=True)
         stategies = {}
@@ -34,12 +34,12 @@ def main() -> None:
         result = []
         default_python = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python)]
         python_flavours = len(KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :])
-        for env in other_envs:
+        for env in other_names:
             result.append(
                 {
                     "name": env,
-                    "tox_env": env,
-                    "python-version": default_python,
+                    "passed_name": env,
+                    "python_version": default_python,
                     "os": PLATFORM_MAP["linux"],
                 }
             )
@@ -61,18 +61,18 @@ def main() -> None:
                 result.append(
                     {
                         "name": f"py{py_name}{suffix}",
-                        "python-version": python,
+                        "python_version": python,
                         "os": PLATFORM_MAP[platform],
-                        "tox_env": f"py{py_name}",
+                        "passed_name": f"py{py_name}",
                     }
                 )
 
         core.info(f"Generated {len(result)} matrix entries.")
         names = [k["name"] for k in result]
         core.info(f"Job names: {', '.join(names)}")
-        core.info(f"matrix_include: {json.dumps(result, indent=2)}")
+        core.info(f"matrix: {json.dumps(result, indent=2)}")
 
-        core.set_output("matrix_include", {"include": result})
+        core.set_output("matrix", {"include": result})
 
     except Exception as exc:
         core.set_failed(f"Action failed due to {exc}")
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # only used for local testing, emulating use from github actions
     if os.getenv("GITHUB_ACTIONS") is None:
-        os.environ["INPUT_OTHER_ENVS"] = "lint,pkg"
+        os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_LINUX"] = "full"
