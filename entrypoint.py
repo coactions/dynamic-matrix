@@ -72,7 +72,7 @@ def main() -> None:
         core.info(f"Job names: {', '.join(names)}")
         core.info(f"matrix_include: {json.dumps(result, indent=2)}")
 
-        core.set_output("matrix_include", result)
+        core.set_output("matrix_include", {"include": result})
 
     except Exception as exc:
         core.set_failed(f"Action failed due to {exc}")
