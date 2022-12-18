@@ -1,6 +1,6 @@
 # matrix
 
-Github Action that returns a dynamic test matrix. Currently supports projects
+Github Action that returns a dynamic test matrix, currently supporting projects
 using:
 
 - `python` and `tox`
