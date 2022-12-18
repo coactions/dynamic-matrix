@@ -5,11 +5,11 @@ branding:
   icon: arrow-right-circle
 description: Dynamic Job Matrix for Python
 inputs:
-    min-python:
+    min_python:
       description: Minimal version of python to be tested against.
       required: false
       default: "3.8"
-    other-envs:
+    other_envs:
       description: Comma separated list of other tox environments to include
       default: ""
       required: false
@@ -37,5 +37,3 @@ outputs:
 runs:
   using: docker
   image: Dockerfile
-  args:
-    - ${{ inputs.min-python }}
