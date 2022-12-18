@@ -10,7 +10,7 @@ inputs:
       required: false
       default: "3.8"
     other_names:
-      description: Comma separated list of other tox environments to include
+      description: Newline separated list of other tox environments to include.
       default: ""
       required: false
     platforms:
