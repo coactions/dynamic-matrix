@@ -1,6 +1,7 @@
 #!env python3
 # """Action body."""
 import os
+import json
 import re
 from actions_toolkit import core
 
@@ -69,6 +70,7 @@ def main() -> None:
         core.info(f"Generated {len(result)} matrix entries.")
         names = [k["name"] for k in result]
         core.info(f"Job names: {', '.join(names)}")
+        core.info(f"matrix_include: {json.dumps(result, indent=2)}")
 
         core.set_output("matrix_include", result)
 
