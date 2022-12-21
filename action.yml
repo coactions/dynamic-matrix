@@ -10,7 +10,7 @@ inputs:
     required: false
     default: "3.8"
   max_python:
-    description: Minimal version of python to be tested against.
+    description: Maximal version of python to be tested against.
     required: false
     default: "3.12-dev"
   other_names:

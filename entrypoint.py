@@ -34,7 +34,11 @@ def main() -> None:
 
         result = []
         default_python = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python)]
-        python_flavours = len(KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :  KNOWN_PYTHONS.index(max_python)])
+        if max_python == "3.12":
+            python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
+        else:
+            python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python)+1)]
+        python_flavours = len(python_names)    
         for env in other_names:
             result.append(
                 {
@@ -44,10 +48,9 @@ def main() -> None:
                     "os": PLATFORM_MAP["linux"],
                 }
             )
+
         for platform in platforms:
-            for i, python in enumerate(
-                KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :  KNOWN_PYTHONS.index(max_python)]
-            ):
+            for i, python in enumerate(python_names):
                 py_name = re.sub(r"[^0-9]", "", python.strip("."))
                 if platform == IMPLICIT_PLATFORM:
                     suffix = ""
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     if os.getenv("GITHUB_ACTIONS") is None:
         os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
-        os.environ["INPUT_MAX_PYTHON"] = "3.12-dev"
+        os.environ["INPUT_MAX_PYTHON"] = "3.12"
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_LINUX"] = "full"
         os.environ["INPUT_MACOS"] = "minmax"
