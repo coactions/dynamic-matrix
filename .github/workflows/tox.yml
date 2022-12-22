@@ -40,6 +40,11 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.pre.outputs.matrix) }}
     steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+
       - run: |
           python3 --version
           echo "${{ matrix.passed_name }}"
