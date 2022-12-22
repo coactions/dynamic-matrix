@@ -38,7 +38,7 @@ def main() -> None:
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python)+1)]
-        python_flavours = len(python_names)    
+        python_flavours = len(python_names)
         for env in other_names:
             result.append(
                 {

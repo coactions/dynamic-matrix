@@ -12,7 +12,7 @@ inputs:
   max_python:
     description: Maximal version of python to be tested against.
     required: false
-    default: "3.12-dev"
+    default: "3.12"
   other_names:
     description: Newline separated list of other tox environments to include.
     default: ""
