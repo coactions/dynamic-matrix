@@ -89,7 +89,7 @@ if __name__ == "__main__":
         os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
         os.environ["INPUT_MAX_PYTHON"] = "3.12"
-        os.environ["INPUT_DEFAULT_PYTHON"] = "3.10"
+        os.environ["INPUT_DEFAULT_PYTHON"] = "3.9"
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_LINUX"] = "full"
         os.environ["INPUT_MACOS"] = "minmax"
