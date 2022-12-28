@@ -26,12 +26,14 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
+
     steps:
       - name: Determine matrix
         id: generate_matrix
         uses: coactions/matrix@main
         with:
           other_names: lint
+
   build:
     name: ${{ matrix.name || matrix.passed_name || '?' }}
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
