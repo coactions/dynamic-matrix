@@ -12,7 +12,9 @@ PLATFORM_MAP = {
     "windows": "windows-latest",
 }
 IMPLICIT_PLATFORM = "linux"
-
+IMPLICIT_MIN_PYTHON = "3.8"
+IMPLICIT_MAX_PYTHON = "3.12"
+IMPLICIT_DEFAULT_PYTHON = "3.9"
 
 # loop list staring with given item
 def main() -> None:
@@ -24,8 +26,9 @@ def main() -> None:
     try:
         other_names = core.get_input("other_names", required=False).split("\n")
         platforms = core.get_input("platforms", required=False).split(",")
-        min_python = core.get_input("min_python", required=True)
-        max_python = core.get_input("max_python", required=True)
+        min_python = core.get_input("min_python") or IMPLICIT_MIN_PYTHON
+        max_python = core.get_input("max_python") or IMPLICIT_MAX_PYTHON
+        default_python = core.get_input("default_python") or IMPLICIT_DEFAULT_PYTHON
         strategies = {}
         for platform in PLATFORM_MAP:
             strategies[platform] = core.get_input(platform, required=False)
@@ -33,7 +36,6 @@ def main() -> None:
         core.debug(f"Testing strategy: {strategies}")
 
         result = []
-        default_python = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python)]
         if max_python == "3.12":
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
@@ -89,9 +91,9 @@ if __name__ == "__main__":
         os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
         os.environ["INPUT_MAX_PYTHON"] = "3.12"
+        os.environ["INPUT_DEFAULT_PYTHON"] = "3.10"
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_LINUX"] = "full"
         os.environ["INPUT_MACOS"] = "minmax"
         os.environ["INPUT_WINDOWS"] = "minmax"
-
     main()
