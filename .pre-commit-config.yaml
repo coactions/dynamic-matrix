@@ -16,7 +16,7 @@ repos:
           - prettier
           - prettier-plugin-toml
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.16.0
+    rev: v6.17.1
     hooks:
       - id: cspell
         # entry: codespell --relative
