@@ -42,6 +42,10 @@ def main() -> None:
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python)+1)]
         python_flavours = len(python_names)
         for env in other_names:
+            # Check for using correct python version for other_names like py310-devel.
+            if re.search('py', env):
+                py_version = env.split("-")[0][2:]
+                default_python = f"{py_version[0]}.{py_version[1:]}"
             result.append(
                 {
                     "name": env,
