@@ -43,8 +43,9 @@ def main() -> None:
         python_flavours = len(python_names)
         for env in other_names:
             # Check for using correct python version for other_names like py310-devel.
-            if re.search('py', env):
-                py_version = env.split("-")[0][2:]
+            match = re.search('py(\d+)', env)
+            if match:
+                py_version = match.groups()[0]
                 default_python = f"{py_version[0]}.{py_version[1:]}"
             result.append(
                 {
