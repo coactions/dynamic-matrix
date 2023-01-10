@@ -42,11 +42,17 @@ def main() -> None:
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python)+1)]
         python_flavours = len(python_names)
         for env in other_names:
+            env_python = default_python
+            # Check for using correct python version for other_names like py310-devel.
+            match = re.search('py(\d+)', env)
+            if match:
+                py_version = match.groups()[0]
+                env_python = f"{py_version[0]}.{py_version[1:]}"
             result.append(
                 {
                     "name": env,
                     "passed_name": env,
-                    "python_version": default_python,
+                    "python_version": env_python,
                     "os": PLATFORM_MAP["linux"],
                 }
             )

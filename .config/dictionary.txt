@@ -6,6 +6,7 @@ autoupdate
 codenotify
 codeql
 codespell
+devel
 dmypy
 envlist
 minmax
