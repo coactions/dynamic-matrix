@@ -44,22 +44,22 @@ jobs:
     needs: pre
     strategy: # thais the magic part, entire matrix comes from pre job!
       matrix: ${{ fromJson(needs.pre.outputs.matrix) }}
-  
+
     steps: # common steps used to test with tox
       - uses: actions/checkout@main
         with:
           fetch-depth: 0
-  
+
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-  
+
       - name: Install tox
         run: |
           python -m pip install -U pip
           pip install tox
-  
+
       - run: tox run -e ${{ matrix.passed_name }}
 ```
 
