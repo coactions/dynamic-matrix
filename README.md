@@ -42,7 +42,7 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     needs: pre
-    strategy: # thais the magic part, entire matrix comes from pre job!
+    strategy: # this the magic part, entire matrix comes from pre job!
       matrix: ${{ fromJson(needs.pre.outputs.matrix) }}
 
     steps: # common steps used to test with tox
