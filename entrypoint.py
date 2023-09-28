@@ -78,7 +78,7 @@ def main() -> None:
                     {
                         "name": f"py{py_name}{suffix}",
                         "python_version": python,
-                        "os": PLATFORM_MAP[platform],
+                        "os": PLATFORM_MAP.get(platform, platform),
                         "passed_name": f"py{py_name}",
                     }
                 )
