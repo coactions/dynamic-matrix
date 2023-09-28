@@ -1,20 +1,22 @@
 #!env python3
 # """Action body."""
-import os
 import json
+import os
 import re
+
 from actions_toolkit import core
 
 KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev")
 PLATFORM_MAP = {
     "linux": "ubuntu-22.04",
-    "macos": "macos-12",
+    "macos": "macos-13",
     "windows": "windows-latest",
 }
 IMPLICIT_PLATFORM = "linux"
 IMPLICIT_MIN_PYTHON = "3.8"
 IMPLICIT_MAX_PYTHON = "3.12"
 IMPLICIT_DEFAULT_PYTHON = "3.9"
+
 
 # loop list staring with given item
 def main() -> None:
@@ -39,12 +41,14 @@ def main() -> None:
         if max_python == "3.12":
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
-            python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python)+1)]
+            python_names = KNOWN_PYTHONS[
+                KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python) + 1)
+            ]
         python_flavours = len(python_names)
         for env in other_names:
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
-            match = re.search('py(\d+)', env)
+            match = re.search("py(\d+)", env)
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
@@ -91,7 +95,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-
     # only used for local testing, emulating use from github actions
     if os.getenv("GITHUB_ACTIONS") is None:
         os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
