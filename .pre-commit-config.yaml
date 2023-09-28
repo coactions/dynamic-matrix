@@ -9,21 +9,21 @@ ci:
 repos:
   - repo: https://github.com/pre-commit/mirrors-prettier
     # keep it before yamllint
-    rev: v3.0.0-alpha.6
+    rev: v3.0.3
     hooks:
       - id: prettier
         additional_dependencies:
           - prettier
           - prettier-plugin-toml
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.28.0
+    rev: v7.3.0
     hooks:
       - id: cspell
         # entry: codespell --relative
         args: [--relative, --no-progress, --no-summary]
         name: Spell check with cspell
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.21.0
+    rev: 0.26.3
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/pre-commit/pre-commit-hooks.git
