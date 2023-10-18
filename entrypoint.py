@@ -6,7 +6,7 @@ import re
 
 from actions_toolkit import core
 
-KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev")
+KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev")
 PLATFORM_MAP = {
     "linux": "ubuntu-22.04",
     "macos": "macos-13",
@@ -38,7 +38,7 @@ def main() -> None:
         core.debug(f"Testing strategy: {strategies}")
 
         result = []
-        if max_python == "3.12":
+        if max_python == "3.13":
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
             python_names = KNOWN_PYTHONS[

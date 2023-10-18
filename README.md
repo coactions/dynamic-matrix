@@ -7,7 +7,7 @@ projects using:
 
 ## Supported optional arguments:
 
-- `min_python` - Minimal version of python to be tested against, default is `"3.8"`. The maximum value is currently `"3.12"`
+- `min_python` - Minimal version of python to be tested against, default is `"3.8"`. The maximum value is currently `"3.13"`
 - `other_names`- A list of other tox environments to include in the matrix. We
   plan to read them from [envlist](https://tox.wiki/en/latest/config.html#envlist) field in `tox.ini`.
 - `platforms` - Default to `linux` only but can be `linux`, `windows`, `macos`
