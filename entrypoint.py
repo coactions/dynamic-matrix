@@ -48,7 +48,7 @@ def main() -> None:
         for env in other_names:
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
-            match = re.search("py(\d+)", env)
+            match = re.search(r"py(\d+)", env)
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
