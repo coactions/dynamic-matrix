@@ -7,6 +7,9 @@ import re
 from actions_toolkit import core
 
 KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev")
+PYTHON_REDIRECTS = {
+    "3.13": "3.13-dev" # Remove once GHA allows 3.13 as a valid version
+}
 PLATFORM_MAP = {
     "linux": "ubuntu-22.04",
     "macos": "macos-13",
@@ -56,7 +59,7 @@ def main() -> None:
                 {
                     "name": env,
                     "passed_name": env,
-                    "python_version": env_python,
+                    "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
                     "os": PLATFORM_MAP["linux"],
                 }
             )
@@ -97,9 +100,9 @@ def main() -> None:
 if __name__ == "__main__":
     # only used for local testing, emulating use from github actions
     if os.getenv("GITHUB_ACTIONS") is None:
-        os.environ["INPUT_OTHER_NAMES"] = "lint\npkg"
+        os.environ["INPUT_OTHER_NAMES"] = "lint\npkg\npy313-devel"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
-        os.environ["INPUT_MAX_PYTHON"] = "3.12"
+        os.environ["INPUT_MAX_PYTHON"] = "3.13"
         os.environ["INPUT_DEFAULT_PYTHON"] = "3.10"
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_LINUX"] = "full"
