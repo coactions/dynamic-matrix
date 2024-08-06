@@ -11,7 +11,7 @@ PYTHON_REDIRECTS = {
     "3.13": "3.13-dev" # Remove once GHA allows 3.13 as a valid version
 }
 PLATFORM_MAP = {
-    "linux": "ubuntu-22.04",
+    "linux": "ubuntu-24.04",
     "macos": "macos-13",
     "windows": "windows-latest",
 }
