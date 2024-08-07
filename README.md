@@ -27,7 +27,7 @@ projects using:
 jobs:
   pre: # <-- this runs before your real matrix job
     name: pre
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -41,7 +41,7 @@ jobs:
 
   build:
     name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-24.04' }}
     needs: pre
     strategy: # this the magic part, entire matrix comes from pre job!
       matrix: ${{ fromJson(needs.pre.outputs.matrix) }}

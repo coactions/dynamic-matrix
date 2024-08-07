@@ -1,5 +1,5 @@
 #!env python3
-# """Action body."""
+"""Action body."""
 import json
 import os
 import re
@@ -8,7 +8,7 @@ from actions_toolkit import core
 
 KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev")
 PYTHON_REDIRECTS = {
-    "3.13": "3.13-dev" # Remove once GHA allows 3.13 as a valid version
+    "3.13": "3.13-dev",  # Remove once GHA allows 3.13 as a valid version
 }
 PLATFORM_MAP = {
     "linux": "ubuntu-24.04",
@@ -21,8 +21,10 @@ IMPLICIT_MAX_PYTHON = "3.12"
 IMPLICIT_DEFAULT_PYTHON = "3.9"
 IMPLICIT_SKIP_EXPLODE = "0"
 
+
 # loop list staring with given item
-def main() -> None:
+# pylint: disable=too-many-locals,too-many-branches
+def main() -> None:  # noqa: C901
     """Main."""
     # print all env vars starting with INPUT_
     for k, v in os.environ.items():
@@ -42,16 +44,12 @@ def main() -> None:
         core.debug(f"Testing strategy: {strategies}")
 
         result = []
-        try:
-            if max_python == "3.13":
-                python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
-            else:
-                python_names = KNOWN_PYTHONS[
-                    KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python) + 1)
-                ]
-        except Exception as e:
-            core.debug(e)
-            python_names = ()
+        if max_python == "3.13":
+            python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
+        else:
+            python_names = KNOWN_PYTHONS[
+                KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python) + 1)
+            ]
         python_flavours = len(python_names)
         core.debug("...")
         for env in other_names:
@@ -67,18 +65,14 @@ def main() -> None:
                     "passed_name": env,
                     "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
                     "os": PLATFORM_MAP["linux"],
-                }
+                },
             )
 
         if not skip_explode:
             for platform in platforms:
                 for i, python in enumerate(python_names):
                     py_name = re.sub(r"[^0-9]", "", python.strip("."))
-                    if platform == IMPLICIT_PLATFORM:
-                        suffix = ""
-                    else:
-                        suffix = f"-{platform}"
-
+                    suffix = "" if platform == IMPLICIT_PLATFORM else f"-{platform}"
                     if strategies[platform] == "minmax" and (
                         i not in (0, python_flavours - 1)
                     ):
@@ -90,7 +84,7 @@ def main() -> None:
                             "python_version": python,
                             "os": PLATFORM_MAP.get(platform, platform),
                             "passed_name": f"py{py_name}",
-                        }
+                        },
                     )
 
         core.info(f"Generated {len(result)} matrix entries.")
@@ -100,7 +94,8 @@ def main() -> None:
 
         core.set_output("matrix", {"include": result})
 
-    except Exception as exc:
+    # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001
         core.set_failed(f"Action failed due to {exc}")
 
 
