@@ -1,0 +1,173 @@
+# cspell: disable addopts conftest minversion pyargs testpaths
+[build-system]
+requires = ["cython", "setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = 'dynamic-matrix'
+dynamic = ["version", "dependencies", "optional-dependencies"]
+
+[tool.black]
+target-version = ["py310"]
+
+[tool.codespell]
+skip = ".tox,.mypy_cache,build,.git,.eggs,pip-wheel-metadata"
+
+# Keep this default because xml/report do not know to use load it from config file:
+# data_file = ".coverage"
+[tool.coverage.paths]
+source = ["."]
+
+[tool.coverage.report]
+exclude_also = ["pragma: no cover", "if TYPE_CHECKING:"]
+omit = ["tests/*"]
+# Increase it just so it would pass on any single-python run
+fail_under = 92
+skip_covered = true
+skip_empty = true
+# During development we might remove code (files) with coverage data, and we dont want to fail:
+ignore_errors = true
+show_missing = true
+
+[tool.coverage.run]
+source = ["."]
+# Do not use branch until bug is fixes:
+# https://github.com/nedbat/coveragepy/issues/605
+# branch = true
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+color_output = true
+error_summary = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+# disallow_any_unimported = True
+# warn_redundant_casts = True
+# warn_return_any = True
+# warn_unused_configs = True
+# https://github.com/python/mypy/issues/12664
+incremental = false
+
+[[tool.mypy.overrides]]
+module = [
+  "actions_toolkit",
+]
+ignore_missing_imports = true
+ignore_errors = true
+
+[tool.pylint.IMPORTS]
+preferred-modules = ["py:pathlib", "unittest:pytest"]
+
+[tool.pylint.MAIN]
+extension-pkg-allow-list = ["black.parsing"]
+
+[tool.pylint."MESSAGES CONTROL"]
+# increase from default is 50 which is too aggressive
+max-statements = 60
+disable = [
+  # Disabled on purpose:
+  "line-too-long", # covered by black
+  "protected-access", # covered by ruff SLF001
+  "too-many-branches", # covered by ruff C901
+  # TODO(ssbarnea): remove temporary skips adding during initial adoption:
+  "duplicate-code",
+  # unable to disable it inside tests
+  # https://github.com/PyCQA/pylint/issues/850
+  "cyclic-import",
+  # https://github.com/PyCQA/pylint/issues/8453
+  "preferred-module",
+]
+enable = [
+  "useless-suppression", # Identify unneeded pylint disable statements
+]
+
+[tool.pylint.REPORTING]
+output-format = "colorized"
+
+[tool.pylint.SUMMARY]
+# We don't need the score spamming console, as we either pass or fail
+score = "n"
+
+[tool.pyright]
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
+pythonVersion = "3.10"
+include = ["entrypoint.py"]
+# https://github.com/microsoft/pyright/issues/777
+"stubPath" = ""
+
+# spell-checker:ignore filterwarnings norecursedirs optionflags
+[tool.pytest.ini_options]
+# do not add options here as this will likely break either console runs or IDE
+# integration like vscode or pycharm
+addopts = "-p no:pytest_cov"
+# https://code.visualstudio.com/docs/python/testing
+# coverage is re-enabled in `tox.ini`. That approach is safer than
+# `--no-cov` which prevents activation from tox.ini and which also fails
+# when plugin is effectively missing.
+doctest_optionflags = ["ALLOW_UNICODE", "ELLIPSIS"]
+filterwarnings = [
+  "error",
+  # https://sourceforge.net/p/ruamel-yaml/tickets/452/
+  "ignore:Deprecated call to `pkg_resources.declare_namespace:DeprecationWarning",
+  # https://github.com/spdx/tools-python/issues/507
+  "ignore:pkg_resources is deprecated as an API:DeprecationWarning",
+  # We raise one non critical warning from our own conftest.py:
+  "always::pytest.PytestWarning",
+  # py312 ansible-core
+  # https://github.com/ansible/ansible/issues/81906
+  "ignore:'importlib.abc.TraversableResources' is deprecated and slated for removal in Python 3.14:DeprecationWarning",
+  # https://github.com/ansible/ansible/pull/80968
+  "ignore:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning",
+]
+minversion = "4.6.6"
+norecursedirs = [
+  "*.egg",
+  ".cache",
+  ".eggs",
+  ".git",
+  ".github",
+  ".mypy_cache",
+  ".projects",
+  ".tox",
+  "build",
+  "collections",
+  "dist",
+  "docs",
+]
+python_files = [
+  "test_*.py",
+  # Ref: https://docs.pytest.org/en/latest/reference.html#confval-python_files
+  # Needed to discover legacy nose test modules:
+  "Test*.py",
+]
+# Using --pyargs instead of testpath as we embed some tests
+# See: https://github.com/pytest-dev/pytest/issues/6451#issuecomment-687043537
+# testpaths =
+xfail_strict = true
+
+[tool.ruff]
+target-version = "py310"
+# Same as Black.
+line-length = 88
+lint.ignore = [
+  "D203", # incompatible with D211
+  "D213", # incompatible with D212
+  "E501", # we use black
+  "ERA001", # auto-removal of commented out code affects development and vscode integration
+  "INP001", # "is part of an implicit namespace package", all false positives
+  "PLW2901", # PLW2901: Redefined loop variable
+  "RET504", # Unnecessary variable assignment before `return` statement
+  # temporary disabled until we fix them:
+]
+lint.select = ["ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.setuptools.dynamic]
+dependencies = { file = [".config/requirements.in"] }
+optional-dependencies.test = { file = [".config/requirements-test.in"] }
