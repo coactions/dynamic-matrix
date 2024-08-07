@@ -15,6 +15,7 @@ projects using:
 - `linux`: matrix expansion strategy for Linux, `full` or `minmax`.
 - `windows`: matrix expansion strategy for Windows, `full` or `minmax`.
 - `macos`: matrix expansion strategy for MacOS, `full` or `minmax`.
+- `skip_explode`: pass 1 if you want to avoid generating implicit pyXY jobs.
 
 ## Examples
 
