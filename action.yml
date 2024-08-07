@@ -38,6 +38,11 @@ inputs:
     description: >
       Expansion strategy for windows, full or minmax.
     default: minmax # costly/slow
+  skip_explode:
+    description: >
+      If changed to "1", it will disable generating jobs for each python
+      version and will only return values for jobs inside 'other_names'.
+    default: "0"
 
 outputs:
   matrix_include:
