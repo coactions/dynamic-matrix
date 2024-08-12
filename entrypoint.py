@@ -70,10 +70,12 @@ def main() -> None:  # noqa: C901,PLR0912
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
-            platform_name = "linux"  # implicit platform (os) to use
             for platform_name in PLATFORM_MAP:
                 if platform_name in name:
                     break
+            else:
+                platform_name = "linux"  # implicit platform (os) to use
+
             data = {
                 "name": name,
                 "command": commands[0],
