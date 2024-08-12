@@ -62,25 +62,26 @@ def main() -> None:  # noqa: C901,PLR0912
         python_flavours = len(python_names)
         core.debug("...")
         for line in other_names:
-            if ":" in line:
-                name, command = line.split(":", 1)
-            else:
-                name = line
-                command = f"tox -e {name}"
+            name, _ = line.split(":", 1) if ":" in line else (line, f"tox -e {line}")
+            commands = _.split(";")
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
             match = re.search(r"py(\d+)", name)
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
+            data = {
+                "name": name,
+                "command": commands[0],
+                "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
+                "os": PLATFORM_MAP["linux"],
+            }
+            for index, command in enumerate(commands[1:]):
+                data[f"command{index+2}"] = command
             add_job(
                 result,
                 name,
-                {
-                    "command": command,
-                    "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
-                    "os": PLATFORM_MAP["linux"],
-                },
+                data,
             )
 
         if not skip_explode:
@@ -106,9 +107,13 @@ def main() -> None:  # noqa: C901,PLR0912
         core.info(f"Generated {len(result)} matrix entries.")
         names = sorted(result.keys())
         core.info(f"Job names: {', '.join(names)}")
-        core.info(f"matrix: {json.dumps(result, indent=2)}")
         matrix_include = []
-        matrix_include = [dict(result[name], name=name) for name in names]
+        matrix_include = [
+            dict(sorted(dict(result[name], name=name).items())) for name in names
+        ]
+        core.info(
+            f"Matrix jobs ordered by their name: {json.dumps(matrix_include, indent=2)}",
+        )
 
         core.set_output("matrix", {"include": matrix_include})
 
@@ -126,7 +131,7 @@ if __name__ == "__main__":
         os.environ["INPUT_MAX_PYTHON"] = "3.13"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
         os.environ["INPUT_OTHER_NAMES"] = (
-            "lint\npkg\npy313-devel\npy39-factor:tox -f py39"
+            "lint\npkg\npy313-devel\nall:tox -e unit;tox -e integration"
         )
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_SKIP_EXPLODE"] = "0"
