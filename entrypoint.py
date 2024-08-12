@@ -22,9 +22,18 @@ IMPLICIT_DEFAULT_PYTHON = "3.9"
 IMPLICIT_SKIP_EXPLODE = "0"
 
 
+def add_job(result: dict[str, dict[str, str]], name: str, data: dict[str, str]) -> None:
+    """Adds a new job to the list of generated jobs."""
+    if name in result:
+        core.set_failed(
+            f"Action failed as it tried add an already a job with duplicate name {name}: {result[name]} already present while trying to add {data}",
+        )
+    result[name] = data
+
+
 # loop list staring with given item
 # pylint: disable=too-many-locals,too-many-branches
-def main() -> None:  # noqa: C901
+def main() -> None:  # noqa: C901,PLR0912
     """Main."""
     # print all env vars starting with INPUT_
     for k, v in os.environ.items():
@@ -43,7 +52,7 @@ def main() -> None:  # noqa: C901
 
         core.debug(f"Testing strategy: {strategies}")
 
-        result = []
+        result: dict[str, dict[str, str]] = {}
         if max_python == "3.13":
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
@@ -52,17 +61,23 @@ def main() -> None:  # noqa: C901
             ]
         python_flavours = len(python_names)
         core.debug("...")
-        for env in other_names:
+        for line in other_names:
+            if ":" in line:
+                name, command = line.split(":", 1)
+            else:
+                name = line
+                command = f"tox -e {name}"
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
-            match = re.search(r"py(\d+)", env)
+            match = re.search(r"py(\d+)", name)
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
-            result.append(
+            add_job(
+                result,
+                name,
                 {
-                    "name": env,
-                    "passed_name": env,
+                    "command": command,
                     "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
                     "os": PLATFORM_MAP["linux"],
                 },
@@ -78,21 +93,24 @@ def main() -> None:  # noqa: C901
                     ):
                         continue
 
-                    result.append(
+                    add_job(
+                        result,
+                        f"py{py_name}{suffix}",
                         {
-                            "name": f"py{py_name}{suffix}",
                             "python_version": python,
                             "os": PLATFORM_MAP.get(platform, platform),
-                            "passed_name": f"py{py_name}",
+                            "command": f"tox -e py{py_name}",
                         },
                     )
 
         core.info(f"Generated {len(result)} matrix entries.")
-        names = [k["name"] for k in result]
+        names = sorted(result.keys())
         core.info(f"Job names: {', '.join(names)}")
         core.info(f"matrix: {json.dumps(result, indent=2)}")
+        matrix_include = []
+        matrix_include = [dict(result[name], name=name) for name in names]
 
-        core.set_output("matrix", {"include": result})
+        core.set_output("matrix", {"include": matrix_include})
 
     # pylint: disable=broad-exception-caught
     except Exception as exc:  # noqa: BLE001
@@ -107,7 +125,9 @@ if __name__ == "__main__":
         os.environ["INPUT_MACOS"] = "minmax"
         os.environ["INPUT_MAX_PYTHON"] = "3.13"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
-        os.environ["INPUT_OTHER_NAMES"] = "lint\npkg\npy313-devel"
+        os.environ["INPUT_OTHER_NAMES"] = (
+            "lint\npkg\npy313-devel\npy39-factor:tox -f py39"
+        )
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_SKIP_EXPLODE"] = "0"
         os.environ["INPUT_WINDOWS"] = "minmax"

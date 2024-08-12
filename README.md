@@ -1,6 +1,6 @@
 # matrix
 
-GitHub Action that returns a dynamic test matrix. Currently it supports
+GitHub Action that returns a dynamic test matrix. Currently, it supports
 projects using:
 
 - `python` and `tox`
@@ -17,9 +17,22 @@ projects using:
 - `macos`: matrix expansion strategy for MacOS, `full` or `minmax`.
 - `skip_explode`: pass 1 if you want to avoid generating implicit pyXY jobs.
 
+## Upgrading action from v2 to v3
+
+The returned tox environment name from returned `passed_name` was replaced by
+`command` which would now contain the full command to be executed like
+`tox -e py39`.
+
+```yaml
+# old v2 syntax:
+- run: tox -e ${{ matrix.passed_env }}
+# new v3 syntax:
+- run: ${{ matrix.command }}
+```
+
 ## Examples
 
-<details><summary>Simple workflow using coactions/dynamic-matrix</summary><p>
+Simple workflow using coactions/dynamic-matrix
 
 ```yaml
 # .github/workflows/tox.yml (your workflow file)
@@ -38,6 +51,7 @@ jobs:
           other_names: |
             lint
             pkg
+            py39-all:tox -f py39
 
   build:
     name: ${{ matrix.name }}
@@ -61,51 +75,39 @@ jobs:
           python -m pip install -U pip
           pip install tox
 
-      - run: tox run -e ${{ matrix.passed_name }}
+      - run: ${{ matrix.command }}
 ```
-
-</p></details>
 
 ## Q&A
 
-<details><summary>Which projects using tox would benefit from this GitHub Action?</summary><p>
+### Which projects using tox would benefit from this GitHub Action?
 
 If your tox [envlist](https://tox.wiki/en/latest/config.html#envlist) is simple, like `lint,packaging,py{36,37,38,39}` you are among the best candidates to make use of it as that is the primary usage case it covers. If you use environments combining multiple factors, you will need to specify them in `other_names` argument.
 
-</p></details>
-
-<details><summary>Why this action does not just load <tt>envlist</tt> values?</summary><p>
+### Why this action does not just load <tt>envlist</tt> values?
 
 We plan to add support for this in the future but it might not be
 as simple as one would assume. For historical reasons `envlist` do very often already include python versions instead of generic `py` entry or
 they are outdated. The repository code is not available at the
 time this action runs.
 
-</p></details>
-
-<details><summary>Why only Linux testing is enabled by default?</summary><p>
+### Why only Linux testing is enabled by default?
 
 Linux runners are the fastest ones and many Python projects do not need to support platforms like Windows or macOS. That is why the default platform contains only lines. Still, you can enable all of them by specifying `platforms: linux,windows,macos` in the action arguments.
 
-</p></details>
+### Why Windows and MacOS matrix expansion strategy is different than the Linux one?
 
-<details><summary>Why Windows and MacOS matrix expansion strategy is different than Linux one?</summary><p>
+The defaults for macOS and Windows are `minmax` while for Linux is `full`. This limits resource usage while still providing a good level of testing. If your pythons are `py38,py39,py310,py311` unless you specify `windows: full` you will see only two Windows based jobs in the generated matrix: py38 and py311.
 
-The defaults for macOS and Windows are `minmax` while for Linux is `full`. This limit resource usage low while still providing a good level of testing. If your pythons are `py38,py39,py310,py311` unless you specify `windows: full` you will see only two Windows based jobs in the generated matrix: py38 and py311.
+### Why is <tt>other_names</tt> a multiline string instead of being a comma-separated one?
 
-</p></details>
-
-<details><summary>What is the difference between <tt>name</tt> and <tt>passed_name</tt> in generated matrix?</summary><p>
-
-`name` is aimed to be the job name displayed in GHA, while `passed_name` is the tox environment name. We did not name it `tox_env` because we plan to add support for other testing frameworks, which might use different
-terminology.
-
-</p></details>
-
-<details><summary>Why is <tt>other_names</tt> a multiline string instead of being comma separated?</summary><p>
-
-We wanted to allow users to chain (group) multiple tox environments in a single command like `tox run -e lint,packaging`, and this means that we
-needed to allow users to use commas as part of a valid name, without
+We wanted to allow users to chain (group) multiple tox environments in a single command like `tox run -e lint,packaging`, and this means that we needed to allow users to use commas as part of a valid name, without
 splitting on it.
 
-</p></details>
+### How to use custom test commands for some jobs.
+
+In v3 we allow users to add entries like `py39-all:tox -f py39` inside `other-names`. This would translated into returning the job name `py39-all` and the command `tox -f py39`.
+
+This is especially useful as it allows users to make use of labels (`-m`) and factor filtering (`-f`) to select groups of tox environments instead of just using the environments (`-e`) selector.
+
+This allows running other test frameworks instead of tox.
