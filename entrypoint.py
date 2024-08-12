@@ -22,6 +22,15 @@ IMPLICIT_DEFAULT_PYTHON = "3.9"
 IMPLICIT_SKIP_EXPLODE = "0"
 
 
+def sort_human(l: list[str]) -> list[str]:
+    """Sort a list using human logic, so 'py39' comes before 'py311'."""
+    def convert(text: str) -> str | float:
+        return float(text) if text.isdigit() else text
+    def alphanum(key):
+        return [convert(c) for c in re.split("([-+]?[0-9]*\\.?[0-9]*)", key)]
+    l.sort(key=alphanum)
+    return l
+
 def add_job(result: dict[str, dict[str, str]], name: str, data: dict[str, str]) -> None:
     """Adds a new job to the list of generated jobs."""
     if name in result:
@@ -111,7 +120,7 @@ def main() -> None:  # noqa: C901,PLR0912
                     )
 
         core.info(f"Generated {len(result)} matrix entries.")
-        names = sorted(result.keys())
+        names = sort_human(list(result.keys()))
         core.info(f"Job names: {', '.join(names)}")
         matrix_include = []
         matrix_include = [
