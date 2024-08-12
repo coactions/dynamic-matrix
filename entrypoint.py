@@ -70,11 +70,15 @@ def main() -> None:  # noqa: C901,PLR0912
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
+            platform_name = "linux"  # implicit platform (os) to use
+            for platform_name in PLATFORM_MAP:
+                if platform_name in name:
+                    break
             data = {
                 "name": name,
                 "command": commands[0],
                 "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
-                "os": PLATFORM_MAP["linux"],
+                "os": PLATFORM_MAP[platform_name],
             }
             for index, command in enumerate(commands[1:]):
                 data[f"command{index+2}"] = command
@@ -131,7 +135,7 @@ if __name__ == "__main__":
         os.environ["INPUT_MAX_PYTHON"] = "3.13"
         os.environ["INPUT_MIN_PYTHON"] = "3.8"
         os.environ["INPUT_OTHER_NAMES"] = (
-            "lint\npkg\npy313-devel\nall:tox -e unit;tox -e integration"
+            "lint\npkg\npy313-devel\nall-macos:tox -e unit;tox -e integration"
         )
         os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
         os.environ["INPUT_SKIP_EXPLODE"] = "0"
