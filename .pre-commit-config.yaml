@@ -40,6 +40,8 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+        additional_dependencies:
+          - pytest
   - repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
@@ -53,6 +55,7 @@ repos:
         args: [--strict]
         additional_dependencies:
           - actions-toolkit
+          - pytest
   - repo: https://github.com/pycqa/pylint
     rev: v3.2.6
     hooks:
@@ -61,3 +64,4 @@ repos:
           - --output-format=colorized
         additional_dependencies:
           - actions-toolkit
+          - pytest

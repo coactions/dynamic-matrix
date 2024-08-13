@@ -161,9 +161,14 @@ lint.ignore = [
   "INP001", # "is part of an implicit namespace package", all false positives
   "PLW2901", # PLW2901: Redefined loop variable
   "RET504", # Unnecessary variable assignment before `return` statement
+  "S603", # https://github.com/astral-sh/ruff/issues/4045
+
   # temporary disabled until we fix them:
 ]
 lint.select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["SLF001", "S101", "FBT001"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

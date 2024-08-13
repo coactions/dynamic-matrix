@@ -1,8 +1,11 @@
 #!env python3
 """Action body."""
+
 import json
 import os
 import re
+from pathlib import Path
+from typing import Any
 
 from actions_toolkit import core
 
@@ -22,14 +25,18 @@ IMPLICIT_DEFAULT_PYTHON = "3.9"
 IMPLICIT_SKIP_EXPLODE = "0"
 
 
-def sort_human(l: list[str]) -> list[str]:
+def sort_human(data: list[str]) -> list[str]:
     """Sort a list using human logic, so 'py39' comes before 'py311'."""
+
     def convert(text: str) -> str | float:
         return float(text) if text.isdigit() else text
-    def alphanum(key):
-        return [convert(c) for c in re.split("([-+]?[0-9]*\\.?[0-9]*)", key)]
-    l.sort(key=alphanum)
-    return l
+
+    def alphanumeric(key: str) -> list[str | float]:
+        return [convert(c) for c in re.split(r"([-+]?\d*\\.?\d*)", key)]
+
+    data.sort(key=alphanumeric)
+    return data
+
 
 def add_job(result: dict[str, dict[str, str]], name: str, data: dict[str, str]) -> None:
     """Adds a new job to the list of generated jobs."""
@@ -40,9 +47,37 @@ def add_job(result: dict[str, dict[str, str]], name: str, data: dict[str, str]) 
     result[name] = data
 
 
+def get_platforms() -> list[str]:
+    """Retrieve effective list of platforms."""
+    platforms = []
+    for v in core.get_input("platforms", required=False).split(","):
+        platform, run_on = v.split(":") if ":" in v else (v, None)
+        if not platform:
+            continue
+        if run_on:
+            core.debug(
+                f"Add platform '{platform}' with run_on={run_on} to known platforms",
+            )
+            PLATFORM_MAP[platform] = run_on
+        platforms.append(platform)
+    return platforms
+
+
+def produce_output(output: dict[str, Any]) -> None:
+    """Produce the output."""
+    if "TEST_GITHUB_OUTPUT_JSON" in os.environ:
+        with Path(os.environ["TEST_GITHUB_OUTPUT_JSON"]).open(
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump(output, f)
+    for key, value in output.items():
+        core.set_output(key, value)
+
+
 # loop list staring with given item
 # pylint: disable=too-many-locals,too-many-branches
-def main() -> None:  # noqa: C901,PLR0912
+def main() -> None:  # noqa: C901,PLR0912,PLR0915
     """Main."""
     # print all env vars starting with INPUT_
     for k, v in os.environ.items():
@@ -50,12 +85,16 @@ def main() -> None:  # noqa: C901,PLR0912
             core.info(f"Env var {k}={v}")
     try:
         other_names = core.get_input("other_names", required=False).split("\n")
-        platforms = core.get_input("platforms", required=False).split(",")
+        platforms = get_platforms()
+        core.info(f"Effective platforms: {platforms}")
+        core.info(f"Platform map: {PLATFORM_MAP}")
+
         min_python = core.get_input("min_python") or IMPLICIT_MIN_PYTHON
         max_python = core.get_input("max_python") or IMPLICIT_MAX_PYTHON
         default_python = core.get_input("default_python") or IMPLICIT_DEFAULT_PYTHON
         skip_explode = int(core.get_input("skip_explode") or IMPLICIT_SKIP_EXPLODE)
         strategies = {}
+
         for platform in PLATFORM_MAP:
             strategies[platform] = core.get_input(platform, required=False)
 
@@ -69,7 +108,15 @@ def main() -> None:  # noqa: C901,PLR0912
                 KNOWN_PYTHONS.index(min_python) : (KNOWN_PYTHONS.index(max_python) + 1)
             ]
         python_flavours = len(python_names)
-        core.debug("...")
+
+        def sort_key(s: str) -> tuple[int, str]:
+            """Sorts longer strings first."""
+            return -len(s), s
+
+        # we put longer names first in order to pick the most specific platforms
+        platform_names_sorted = sorted(PLATFORM_MAP.keys(), key=sort_key)
+        core.info(f"Known platforms sorted: {platform_names_sorted}")
+
         for line in other_names:
             name, _ = line.split(":", 1) if ":" in line else (line, f"tox -e {line}")
             commands = _.split(";")
@@ -79,7 +126,7 @@ def main() -> None:  # noqa: C901,PLR0912
             if match:
                 py_version = match.groups()[0]
                 env_python = f"{py_version[0]}.{py_version[1:]}"
-            for platform_name in PLATFORM_MAP:
+            for platform_name in platform_names_sorted:
                 if platform_name in name:
                     break
             else:
@@ -102,7 +149,7 @@ def main() -> None:  # noqa: C901,PLR0912
         if not skip_explode:
             for platform in platforms:
                 for i, python in enumerate(python_names):
-                    py_name = re.sub(r"[^0-9]", "", python.strip("."))
+                    py_name = re.sub(r"\D", "", python.strip("."))
                     suffix = "" if platform == IMPLICIT_PLATFORM else f"-{platform}"
                     if strategies[platform] == "minmax" and (
                         i not in (0, python_flavours - 1)
@@ -129,8 +176,8 @@ def main() -> None:  # noqa: C901,PLR0912
         core.info(
             f"Matrix jobs ordered by their name: {json.dumps(matrix_include, indent=2)}",
         )
-
-        core.set_output("matrix", {"include": matrix_include})
+        output = {"matrix": {"include": matrix_include}}
+        produce_output(output)
 
     # pylint: disable=broad-exception-caught
     except Exception as exc:  # noqa: BLE001
@@ -138,17 +185,4 @@ def main() -> None:  # noqa: C901,PLR0912
 
 
 if __name__ == "__main__":
-    # only used for local testing, emulating use from github actions
-    if os.getenv("GITHUB_ACTIONS") is None:
-        os.environ["INPUT_DEFAULT_PYTHON"] = "3.10"
-        os.environ["INPUT_LINUX"] = "full"
-        os.environ["INPUT_MACOS"] = "minmax"
-        os.environ["INPUT_MAX_PYTHON"] = "3.13"
-        os.environ["INPUT_MIN_PYTHON"] = "3.8"
-        os.environ["INPUT_OTHER_NAMES"] = (
-            "lint\npkg\npy313-devel\nall-macos:tox -e unit;tox -e integration"
-        )
-        os.environ["INPUT_PLATFORMS"] = "linux,macos"  # macos and windows
-        os.environ["INPUT_SKIP_EXPLODE"] = "0"
-        os.environ["INPUT_WINDOWS"] = "minmax"
     main()

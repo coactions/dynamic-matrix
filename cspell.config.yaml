@@ -10,4 +10,5 @@ dictionaries:
   - words
   - python
 ignorePaths:
+  - .vscode/settings.json
   - cspell.config.yaml
