@@ -13,3 +13,4 @@ minmax
 mkdocs
 pyenv
 ssbarnea
+pypa
