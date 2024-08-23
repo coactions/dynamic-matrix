@@ -122,10 +122,12 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
             commands = _.split(";")
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
-            match = re.search(r"py(\d+)", name)
-            if match:
-                py_version = match.groups()[0]
+            pythons: list[str] = []
+            for py_version in re.findall(r"py(\d+)", line):
                 env_python = f"{py_version[0]}.{py_version[1:]}"
+                pythons.append(PYTHON_REDIRECTS.get(env_python, env_python))
+            if not pythons:
+                pythons.append(default_python)
             for platform_name in platform_names_sorted:
                 if platform_name in name:
                     break
@@ -135,7 +137,7 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
             data = {
                 "name": name,
                 "command": commands[0],
-                "python_version": PYTHON_REDIRECTS.get(env_python, env_python),
+                "python_version": "\n".join(pythons),
                 "os": PLATFORM_MAP[platform_name],
             }
             for index, command in enumerate(commands[1:]):

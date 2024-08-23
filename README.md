@@ -30,6 +30,22 @@ The returned tox environment name from returned `passed_name` was replaced by
 - run: ${{ matrix.command }}
 ```
 
+## Returned values
+
+This action returns a list of actions to be executed, each of them containing
+the following fields:
+
+- `name` of the job to run
+
+- `command`, and optional `command2`, `command3`, ... which are the commands
+  to be executed using `run: ` step.
+
+- `python_version` is a string compatible with the expected format used by
+  [actions/setup-python](https://github.com/actions/setup-python) github action,
+  like `3.12` or `3.11\n3.12` when multiple python versions are to be installed.
+
+- `os` the name of an github runner, should be passed to `runs_on: `
+
 ## Examples
 
 Simple workflow using coactions/dynamic-matrix
