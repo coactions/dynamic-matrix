@@ -19,7 +19,7 @@ import pytest
                 "INPUT_MACOS": "minmax",
                 "INPUT_MAX_PYTHON": "3.8",
                 "INPUT_MIN_PYTHON": "3.8",
-                "INPUT_OTHER_NAMES": "z\nall-linux-arm64:tox -e unit;tox -e integration",
+                "INPUT_OTHER_NAMES": "z\nall-linux-arm64:tox -e py38-unit;tox -e py310-integration",
                 "INPUT_PLATFORMS": "linux-arm64:ubuntu-24.04-arm64-2core",
                 "INPUT_SKIP_EXPLODE": "1",
                 "INPUT_WINDOWS": "minmax",
@@ -28,11 +28,11 @@ import pytest
                 "matrix": {
                     "include": [
                         {
-                            "command": "tox -e unit",
-                            "command2": "tox -e integration",
+                            "command": "tox -e py38-unit",
+                            "command2": "tox -e py310-integration",
                             "name": "all-linux-arm64",
                             "os": "ubuntu-24.04-arm64-2core",
-                            "python_version": "3.8",
+                            "python_version": "3.8\n3.10",
                         },
                         {
                             "command": "tox -e z",
@@ -71,5 +71,5 @@ def test_action(passed_env: dict[str, str], expected: dict[str, str]) -> None:
         assert isinstance(data, dict), data
         assert len(data) == 1
         assert "matrix" in data
-        assert data == expected
+        assert data == expected, result
         # TestCase().assertDictEqual(data, expected)
