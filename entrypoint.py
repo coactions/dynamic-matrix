@@ -84,7 +84,8 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
         if k.startswith("INPUT_"):
             core.info(f"Env var {k}={v}")
     try:
-        other_names = core.get_input("other_names", required=False).split("\n")
+        # ignore empty lines
+        other_names =  [x for x in core.get_input("other_names", required=False).split("\n") if x]
         platforms = get_platforms()
         core.info(f"Effective platforms: {platforms}")
         core.info(f"Platform map: {PLATFORM_MAP}")
