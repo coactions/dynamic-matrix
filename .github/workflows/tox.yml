@@ -26,9 +26,11 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Determine matrix
         id: generate_matrix
-        uses: coactions/matrix@main
+        uses: ./
         with:
           min_python: "3.10"
           max_python: "3.13"
