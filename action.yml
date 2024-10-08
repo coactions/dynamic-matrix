@@ -12,7 +12,7 @@ inputs:
   max_python:
     description: Maximal version of python to be tested against.
     required: false
-    default: "3.12"
+    default: "3.13"
   default_python:
     description: Default version of python used by env.
     required: false

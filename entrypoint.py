@@ -9,9 +9,9 @@ from typing import Any
 
 from actions_toolkit import core
 
-KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev")
+KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14-dev")
 PYTHON_REDIRECTS = {
-    "3.13": "3.13-dev",  # Remove once GHA allows 3.13 as a valid version
+    "3.14": "3.14-dev",  # Remove once GHA allows 3.14 as a valid version
 }
 PLATFORM_MAP = {
     "linux": "ubuntu-24.04",
@@ -104,7 +104,7 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
         core.debug(f"Testing strategy: {strategies}")
 
         result: dict[str, dict[str, str]] = {}
-        if max_python == "3.13":
+        if max_python == "3.14":
             python_names = KNOWN_PYTHONS[KNOWN_PYTHONS.index(min_python) :]
         else:
             python_names = KNOWN_PYTHONS[
@@ -144,7 +144,7 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
                 "os": PLATFORM_MAP[platform_name],
             }
             for index, command in enumerate(commands[1:]):
-                data[f"command{index+2}"] = command
+                data[f"command{index + 2}"] = command
             add_job(
                 result,
                 name,
