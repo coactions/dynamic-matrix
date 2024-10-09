@@ -76,7 +76,7 @@ def produce_output(output: dict[str, Any]) -> None:
 
 
 # loop list staring with given item
-# pylint: disable=too-many-locals,too-many-branches
+# pylint: disable=too-many-locals,too-many-branches,too-many-statements
 def main() -> None:  # noqa: C901,PLR0912,PLR0915
     """Main."""
     # print all env vars starting with INPUT_
@@ -121,8 +121,25 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
         core.info(f"Known platforms sorted: {platform_names_sorted}")
 
         for line in other_names:
-            name, _ = line.split(":", 1) if ":" in line else (line, f"tox -e {line}")
-            commands = _.split(";")
+            # line can look like:
+            # - name
+            # - name:command1;command2
+            # - name:command:runner=ubuntu-20.04
+            segments = line.split(":")
+            name = segments[0]
+            commands = [f"tox -e {name}"]  # implicit commands if not provided
+            args = {}
+            if len(segments) > 1 and segments[1]:
+                commands = segments[1].split(";")
+            if len(segments) > 2:  # noqa: PLR2004
+                # we have arguments foo=bar;baz=qux
+                try:
+                    args = dict(x.split("=") for x in segments[2].split(";"))
+                except ValueError:
+                    core.set_failed(
+                        f"Action failed due to optional args not having the expected format 'a=b;c=d', value being '{segments[2]}'",
+                    )
+
             env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
             pythons: list[str] = []
@@ -131,17 +148,19 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
                 pythons.append(PYTHON_REDIRECTS.get(env_python, env_python))
             if not pythons:
                 pythons.append(default_python)
-            for platform_name in platform_names_sorted:
-                if platform_name in name:
-                    break
-            else:
-                platform_name = "linux"  # implicit platform (os) to use
+            if "runner" not in args:
+                for platform_name in platform_names_sorted:
+                    if platform_name in name:
+                        break
+                else:
+                    platform_name = "linux"  # implicit platform (os) to use
+                args["runner"] = PLATFORM_MAP[platform_name]
 
             data = {
                 "name": name,
                 "command": commands[0],
                 "python_version": "\n".join(pythons),
-                "os": PLATFORM_MAP[platform_name],
+                "os": args["runner"],
             }
             for index, command in enumerate(commands[1:]):
                 data[f"command{index + 2}"] = command

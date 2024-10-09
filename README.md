@@ -68,6 +68,10 @@ jobs:
             lint
             pkg
             py39-all:tox -f py39
+            py39-arm64:tox -e py39:runner=ubuntu-24.04-arm64
+          # ^ job-visible name : optional command : optional arguments
+          # command can use ; as separator to run multiple commands
+          # the only recognized argument is now 'runner'
 
   build:
     name: ${{ matrix.name }}
