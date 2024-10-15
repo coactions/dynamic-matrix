@@ -52,7 +52,7 @@ jobs:
           cache-dependency-path: .config/requirements*.in
           cache: pip
           python-version: ${{ matrix.python_version }}
-      - run: pip3 install -U tox
+      - run: python3 -m pip install -U uv tox tox-uv
       - run: "${{ matrix.command }}"
   codeql:
     name: codeql
