@@ -157,6 +157,8 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
                 args["runner"] = PLATFORM_MAP[platform_name]
 
             data = {
+                # we expose all args in the output
+                **args,
                 "name": name,
                 "command": commands[0],
                 "python_version": "\n".join(pythons),

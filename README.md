@@ -68,10 +68,12 @@ jobs:
             lint
             pkg
             py39-all:tox -f py39
-            py39-arm64:tox -e py39:runner=ubuntu-24.04-arm64
+            py39-arm64:tox -e py39:runner=ubuntu-24.04-arm64;foo=bar
           # ^ job-visible name : optional command : optional arguments
           # command can use ; as separator to run multiple commands
-          # the only recognized argument is now 'runner'
+          # 'runner' argument has special meaning, it is used to determine
+          # the value of 'os' variable in the matrix job. Others are just
+          # passed to the exploded matrix.
 
   build:
     name: ${{ matrix.name }}
@@ -96,6 +98,18 @@ jobs:
           pip install tox
 
       - run: ${{ matrix.command }}
+
+      - run: ${{ matrix.command2 }}
+        if: ${{ matrix.command2 }}
+
+      - run: ${{ matrix.command3 }}
+        if: ${{ matrix.command3 }}
+
+      - run: ${{ matrix.command4 }}
+        if: ${{ matrix.command4 }}
+
+      - run: ${{ matrix.command5 }}
+        if: ${{ matrix.command5 }}
 ```
 
 ## Q&A
