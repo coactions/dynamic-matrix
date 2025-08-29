@@ -9,8 +9,10 @@ codespell
 devel
 dmypy
 envlist
+exuo
 minmax
 mkdocs
 pyenv
-ssbarnea
 pypa
+showlocals
+ssbarnea

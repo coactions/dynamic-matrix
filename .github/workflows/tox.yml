@@ -46,13 +46,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.uv_python_version }}
+        uses: astral-sh/setup-uv@v6
         with:
-          cache-dependency-path: .config/requirements*.in
-          cache: pip
-          python-version: ${{ matrix.python_version }}
-      - run: python3 -m pip install -U uv tox tox-uv
+          python-version: ${{ matrix.uv_python_version }}
+      - run: |
+          set -exuo pipefail
+          uv tool install pip
+          uv tool install coverage
+          uv tool install tox --with tox-uv
+          uv --version
+          tox --version
+          pip --version
+          coverage --version
       - run: "${{ matrix.command }}"
   codeql:
     name: codeql

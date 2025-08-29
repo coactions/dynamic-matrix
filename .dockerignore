@@ -1,0 +1,11 @@
+.cache
+.git
+.github
+.mypy_cache
+.ruff_cache
+.tox
+.venv
+.vscode
+build
+dist
+tests

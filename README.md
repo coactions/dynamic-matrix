@@ -87,6 +87,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # NOTE: for astra-sh/setup-uv action use {{ matrix.uv_python_version }}
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
