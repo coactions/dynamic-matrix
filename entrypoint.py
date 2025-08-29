@@ -9,9 +9,19 @@ from typing import Any
 
 from actions_toolkit import core
 
-KNOWN_PYTHONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14-dev")
+KNOWN_PYTHONS = (
+    "3.7",
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+    "3.13",
+    "3.14",
+    "3.15-dev",
+)
 PYTHON_REDIRECTS = {
-    "3.14": "3.14-dev",  # Remove once GHA allows 3.14 as a valid version
+    "3.15": "3.15-dev",  # Remove once GHA allows 3.14 as a valid version
 }
 PLATFORM_MAP = {
     "linux": "ubuntu-24.04",
