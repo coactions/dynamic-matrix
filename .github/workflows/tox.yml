@@ -46,6 +46,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Set pre-commit cache
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
+        if: ${{ matrix.name == 'lint' }}
+        with:
+          path: |
+            ~/.cache/pre-commit
+          key: pre-commit-${{ matrix.name }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: Set up Python ${{ matrix.uv_python_version }}
         uses: astral-sh/setup-uv@v6
         with:
