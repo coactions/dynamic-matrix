@@ -1,4 +1,5 @@
 # cspell: disable addopts conftest minversion pyargs testpaths
+
 [build-system]
 requires = ["cython", "setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -54,7 +55,7 @@ incremental = false
 
 [[tool.mypy.overrides]]
 module = [
-  "actions_toolkit",
+  "actions_toolkit"
 ]
 ignore_missing_imports = true
 ignore_errors = true
@@ -79,10 +80,10 @@ disable = [
   # https://github.com/PyCQA/pylint/issues/850
   "cyclic-import",
   # https://github.com/PyCQA/pylint/issues/8453
-  "preferred-module",
+  "preferred-module"
 ]
 enable = [
-  "useless-suppression", # Identify unneeded pylint disable statements
+  "useless-suppression" # Identify unneeded pylint disable statements
 ]
 
 [tool.pylint.REPORTING]
@@ -121,7 +122,7 @@ filterwarnings = [
   # https://github.com/ansible/ansible/issues/81906
   "ignore:'importlib.abc.TraversableResources' is deprecated and slated for removal in Python 3.14:DeprecationWarning",
   # https://github.com/ansible/ansible/pull/80968
-  "ignore:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning",
+  "ignore:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning"
 ]
 minversion = "4.6.6"
 norecursedirs = [
@@ -136,13 +137,13 @@ norecursedirs = [
   "build",
   "collections",
   "dist",
-  "docs",
+  "docs"
 ]
 python_files = [
   "test_*.py",
   # Ref: https://docs.pytest.org/en/latest/reference.html#confval-python_files
   # Needed to discover legacy nose test modules:
-  "Test*.py",
+  "Test*.py"
 ]
 # Using --pyargs instead of testpath as we embed some tests
 # See: https://github.com/pytest-dev/pytest/issues/6451#issuecomment-687043537
@@ -153,7 +154,10 @@ xfail_strict = true
 target-version = "py310"
 # Same as Black.
 line-length = 88
-lint.ignore = [
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
   "D203", # incompatible with D211
   "D213", # incompatible with D212
   "E501", # we use black
@@ -161,11 +165,8 @@ lint.ignore = [
   "INP001", # "is part of an implicit namespace package", all false positives
   "PLW2901", # PLW2901: Redefined loop variable
   "RET504", # Unnecessary variable assignment before `return` statement
-  "S603", # https://github.com/astral-sh/ruff/issues/4045
-
-  # temporary disabled until we fix them:
+  "S603" # https://github.com/astral-sh/ruff/issues/4045
 ]
-lint.select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["SLF001", "S101", "FBT001"]
@@ -174,5 +175,88 @@ lint.select = ["ALL"]
 convention = "google"
 
 [tool.setuptools.dynamic]
-dependencies = { file = [".config/requirements.in"] }
-optional-dependencies.test = { file = [".config/requirements-test.in"] }
+dependencies = {file = [".config/requirements.in"]}
+optional-dependencies.test = {file = [".config/requirements-test.in"]}
+
+[tool.tox]
+min_version = "4.21.2"
+env_list = ["lint", "py"]
+isolated_build = true
+skip_missing_interpreters = true
+requires = [
+  "tox>=4.28.4",
+  "tox-extra >= 2.0.2",
+  "tox-uv >= 1.28.0",
+  "setuptools >= 65.3.0" # editable installs
+]
+
+[tool.tox.env.lint]
+description = "Run all linters"
+# pip compile includes python version in output constraints, so we want to
+# be sure that version does not change randomly.
+base_python = ["python3.10"]
+deps = [
+  "pre-commit>=2.6.0",
+  "setuptools>=51.1.1"
+]
+skip_install = true
+commands_pre = []
+commands = [
+  ["{env_python}", "-m", "pre_commit", "run", "--all-files", "--show-diff-on-failure", "{posargs:}"]
+]
+
+[tool.tox.env_run_base]
+description = "Run the tests under {base_python}"
+extras = ["test"]
+commands_pre = [
+  ["sh", "-c", "rm -f {envdir}/.coverage.* 2>/dev/null || true"],
+  # safety measure to assure we do not accidentally run tests with broken dependencies
+  ["uv", "pip", "check"]
+]
+commands = [
+  [
+    "coverage",
+    "run",
+    "-m",
+    "pytest",
+    {default = ["-v", "-n", "0", "--durations=10", "--doctest-modules", "--showlocals", "-ra"], extend = true, replace = "posargs"}
+  ]
+]
+pass_env = [
+  "CURL_CA_BUNDLE", # https proxies, https://github.com/tox-dev/tox/issues/1437
+  "FORCE_COLOR",
+  "HOME",
+  "NO_COLOR",
+  "PYTEST_*", # allows developer to define their own preferences
+  "PYTEST_REQPASS", # needed for CI
+  "PYTHON*", # PYTHONPYCACHEPREFIX, PYTHONIOENCODING, PYTHONBREAKPOINT,...
+  "PY_COLORS",
+  "RTD_TOKEN",
+  "REQUESTS_CA_BUNDLE", # https proxies
+  "SETUPTOOLS_SCM_DEBUG",
+  "SSL_CERT_FILE", # https proxies
+  "SSH_AUTH_SOCK", # may be needed by git
+  "LANG",
+  "LC_*",
+  "PRE_COMMIT_HOME",
+  "UV_*"
+]
+allowlist_externals = [
+  "bash",
+  "find",
+  "git",
+  "pwd",
+  "rm",
+  "sh",
+  "tox"
+]
+# https://tox.wiki/en/latest/upgrading.html#editable-mode
+package = "editable"
+
+[tool.tox.env_run_base.set_env]
+COVERAGE_FILE = "{env:COVERAGE_FILE:{env_dir}/.coverage.{env_name}}"
+COVERAGE_PROCESS_START = "{tox_root}/pyproject.toml"
+# PIP_CONSTRAINT = {toxinidir}/.config/constraints.txt
+PIP_DISABLE_PIP_VERSION_CHECK = "1"
+PRE_COMMIT_COLOR = "always"
+FORCE_COLOR = "1"
