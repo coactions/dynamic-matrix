@@ -33,6 +33,7 @@ import pytest
                             "name": "all-linux-arm64",
                             "os": "ubuntu-24.04-arm64-2core",
                             "python_version": "3.8\n3.10",
+                            "uv_python_version": "3.8\n3.10",
                             "runner": "ubuntu-24.04-arm64-2core",
                         },
                         {
@@ -41,6 +42,7 @@ import pytest
                             "name": "foo",
                             "os": "custom-arm64",
                             "python_version": "3.8",
+                            "uv_python_version": "3.8",
                             "runner": "custom-arm64",
                         },
                         {
@@ -48,6 +50,7 @@ import pytest
                             "name": "z",
                             "os": "ubuntu-24.04",
                             "python_version": "3.8",
+                            "uv_python_version": "3.8",
                             "runner": "ubuntu-24.04",
                         },
                     ],
@@ -67,7 +70,7 @@ def test_action(passed_env: dict[str, str], expected: dict[str, str]) -> None:
         }
 
         result = run(
-            [sys.executable, "entrypoint.py"],
+            [sys.executable, "-m", "dynamic_matrix"],
             text=True,
             shell=False,
             check=True,

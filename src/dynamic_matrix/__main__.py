@@ -140,12 +140,11 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
                         f"Action failed due to optional args not having the expected format 'a=b;c=d', value being '{segments[2]}'",
                     )
 
-            env_python = default_python
             # Check for using correct python version for other_names like py310-devel.
-            pythons: list[str] = []
-            for py_version in re.findall(r"py(\d+)", line):
-                env_python = f"{py_version[0]}.{py_version[1:]}"
-                pythons.append(PYTHON_REDIRECTS.get(env_python, env_python))
+            pythons: list[str] = [
+                f"{py_version[0]}.{py_version[1:]}"
+                for py_version in re.findall(r"py(\d+)", line)
+            ]
             if not pythons:
                 pythons.append(default_python)
             if "runner" not in args:
@@ -161,7 +160,15 @@ def main() -> None:  # noqa: C901,PLR0912,PLR0915
                 **args,
                 "name": name,
                 "command": commands[0],
-                "python_version": "\n".join(pythons),
+                # versions compatible with actions/setup-python action
+                "python_version": "\n".join(
+                    [
+                        PYTHON_REDIRECTS.get(env_python, env_python)
+                        for env_python in pythons
+                    ],
+                ),
+                # versions compatible with astral-sh/setup-uv action
+                "uv_python_version": "\n".join(pythons),
                 "os": args["runner"],
             }
             for index, command in enumerate(commands[1:]):

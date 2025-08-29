@@ -1,12 +1,34 @@
-# cspell: disable addopts conftest minversion pyargs testpaths
+# cspell: ignore addopts conftest minversion pyargs posargs PYTHONPYCACHEPREFIX PYTHONIOENCODING PYTHONBREAKPOINT
 
 [build-system]
-requires = ["cython", "setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools >= 65.3.0", # required by pyproject+setuptools_scm integration and editable installs
+  "setuptools_scm[toml] >= 7.0.5" # required for "no-local-version" scheme
+]
+
+[dependency-groups]
+dev = [
+  "coverage-enable-subprocess", # see https://github.com/nedbat/coveragepy/issues/1341#issuecomment-1228942657
+  "coverage[toml] >= 6.4.4",
+  "pytest >= 7.2.2",
+  "pytest-xdist >= 2.1.0"
+]
+lint = [
+  "pre-commit>=3.5.0",
+  "pre-commit-uv>=4.1.4"
+]
 
 [project]
 name = 'dynamic-matrix'
-dynamic = ["version", "dependencies", "optional-dependencies"]
+dynamic = ["version"]
+dependencies = [
+  "actions-toolkit>=0.1.15"
+]
+requires-python = ">=3.10"
+
+[project.scripts]
+dynamic-matrix = "dynamic_matrix.__main__:main"
 
 [tool.black]
 target-version = ["py310"]
@@ -17,7 +39,7 @@ skip = ".tox,.mypy_cache,build,.git,.eggs,pip-wheel-metadata"
 # Keep this default because xml/report do not know to use load it from config file:
 # data_file = ".coverage"
 [tool.coverage.paths]
-source = ["."]
+source = ["src", ".tox/*/site-packages"]
 
 [tool.coverage.report]
 exclude_also = ["pragma: no cover", "if TYPE_CHECKING:"]
@@ -94,9 +116,9 @@ output-format = "colorized"
 score = "n"
 
 [tool.pyright]
+include = ["src"]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 pythonVersion = "3.10"
-include = ["entrypoint.py"]
 # https://github.com/microsoft/pyright/issues/777
 "stubPath" = ""
 
@@ -145,9 +167,6 @@ python_files = [
   # Needed to discover legacy nose test modules:
   "Test*.py"
 ]
-# Using --pyargs instead of testpath as we embed some tests
-# See: https://github.com/pytest-dev/pytest/issues/6451#issuecomment-687043537
-# testpaths =
 xfail_strict = true
 
 [tool.ruff]
@@ -158,6 +177,7 @@ line-length = 88
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+  "COM812", # conflict with formatter
   "D203", # incompatible with D211
   "D213", # incompatible with D212
   "E501", # we use black
@@ -174,13 +194,9 @@ ignore = [
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.setuptools.dynamic]
-dependencies = {file = [".config/requirements.in"]}
-optional-dependencies.test = {file = [".config/requirements-test.in"]}
-
 [tool.tox]
 min_version = "4.21.2"
-env_list = ["lint", "py"]
+env_list = ["lint", "py", "image"]
 isolated_build = true
 skip_missing_interpreters = true
 requires = [
@@ -190,31 +206,36 @@ requires = [
   "setuptools >= 65.3.0" # editable installs
 ]
 
+[tool.tox.env.image]
+dependency_groups = []
+description = "Run the tests in a container"
+skip_install = true
+commands = [
+  ["docker", "build", "-t", "dynamic-matrix", "."],
+  ["docker", "run", "-it", "--rm", "dynamic-matrix"]
+]
+allowlist_externals = ["docker", "sh"]
+
 [tool.tox.env.lint]
 description = "Run all linters"
-# pip compile includes python version in output constraints, so we want to
-# be sure that version does not change randomly.
-base_python = ["python3.10"]
-deps = [
-  "pre-commit>=2.6.0",
-  "setuptools>=51.1.1"
-]
-skip_install = true
+dependency_groups = ["lint"]
 commands_pre = []
 commands = [
-  ["{env_python}", "-m", "pre_commit", "run", "--all-files", "--show-diff-on-failure", "{posargs:}"]
+  ["pre-commit", "run", "--all-files", "--show-diff-on-failure"]
 ]
 
 [tool.tox.env_run_base]
 description = "Run the tests under {base_python}"
-extras = ["test"]
+dependency_groups = ["dev"]
 commands_pre = [
-  ["sh", "-c", "rm -f {envdir}/.coverage.* 2>/dev/null || true"],
+  ["sh", "-c", "rm -f {env_dir}/.coverage.* 2>/dev/null || true"],
   # safety measure to assure we do not accidentally run tests with broken dependencies
   ["uv", "pip", "check"]
 ]
 commands = [
   [
+    "{env_python}",
+    "-m",
     "coverage",
     "run",
     "-m",
@@ -228,7 +249,6 @@ pass_env = [
   "HOME",
   "NO_COLOR",
   "PYTEST_*", # allows developer to define their own preferences
-  "PYTEST_REQPASS", # needed for CI
   "PYTHON*", # PYTHONPYCACHEPREFIX, PYTHONIOENCODING, PYTHONBREAKPOINT,...
   "PY_COLORS",
   "RTD_TOKEN",
@@ -256,7 +276,9 @@ package = "editable"
 [tool.tox.env_run_base.set_env]
 COVERAGE_FILE = "{env:COVERAGE_FILE:{env_dir}/.coverage.{env_name}}"
 COVERAGE_PROCESS_START = "{tox_root}/pyproject.toml"
-# PIP_CONSTRAINT = {toxinidir}/.config/constraints.txt
-PIP_DISABLE_PIP_VERSION_CHECK = "1"
 PRE_COMMIT_COLOR = "always"
 FORCE_COLOR = "1"
+
+[tool.uv]
+default-groups = ["dev"]
+package = true

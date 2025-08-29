@@ -1,5 +1,0 @@
-coverage-enable-subprocess # see https://github.com/nedbat/coveragepy/issues/1341#issuecomment-1228942657
-coverage[toml] >= 6.4.4
-pytest >= 7.2.2
-pytest-xdist >= 2.1.0
-uv
