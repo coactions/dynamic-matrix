@@ -39,7 +39,7 @@ def sort_human(data: list[str]) -> list[str]:
 
 
 def add_job(result: dict[str, dict[str, str]], name: str, data: dict[str, str]) -> None:
-    """Adds a new job to the list of generated jobs."""
+    """Add a new job to the list of generated jobs."""
     if name in result:
         core.set_failed(
             f"Action failed as it tried add an already a job with duplicate name {name}: {result[name]} already present while trying to add {data}",
@@ -78,7 +78,7 @@ def produce_output(output: dict[str, Any]) -> None:
 # loop list staring with given item
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 def main() -> None:  # noqa: C901,PLR0912,PLR0915
-    """Main."""
+    """Execute main function."""
     # print all env vars starting with INPUT_
     for k, v in os.environ.items():
         if k.startswith("INPUT_"):
